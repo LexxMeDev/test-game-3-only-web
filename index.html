@@ -95,7 +95,7 @@
       pointer-events:none;
     }
 
-    /* слева — Raund Count.png */
+    /* слева — Raund Count.png (но без картинки, стекло) */
     #stats{
       position:relative;
       width: 190px;
@@ -222,7 +222,7 @@
     }
     .card.flipped .card-inner{ transform: rotateY(180deg); }
 
-   .face{
+    .face{
       position:absolute;
       inset:0;
       backface-visibility:hidden;
@@ -351,90 +351,121 @@
       z-index: 10;
       padding: 18px;
 
-      background: rgba(0,0,0,.25);
-      backdrop-filter: blur(10px);
+      background: transparent;      /* ✅ нет затемнения */
+      backdrop-filter: blur(10px);  /* ✅ blur остаётся */
+      -webkit-backdrop-filter: blur(10px);
     }
+
     #overlay.show{ display:flex; }
 
+    /* стеклянная плашка как у HUD */
     #win-modal{
-      position:relative;
       width: min(92%, 420px);
-      aspect-ratio: 320 / 410;
       pointer-events:auto;
+
+      border-radius: 26px;
+      padding: 18px;
+
+      background: rgba(255, 255, 255, 0.3);
+      border: 1px solid rgba(255,255,255,.32);
+      box-shadow:
+        0 24px 70px rgba(0,0,0,.35),
+        inset 0 1px 0 rgba(255,255,255,.22);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+
+      position:relative;
+      overflow:hidden;
     }
-    #win-frame{
+    #win-modal::before{
+      content:"";
       position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
-      object-fit:contain;
-      display:block;
+      inset:10px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,.16);
       pointer-events:none;
-      filter: drop-shadow(0 24px 70px rgba(0,0,0,.35));
+    }
+    #win-modal::after{
+      content:"";
+      position:absolute;
+      left:0; right:0; top:0;
+      height: 42%;
+      background: linear-gradient(180deg, rgba(255,255,255,.10), transparent);
+      pointer-events:none;
     }
 
-    /* контент поверх win frame */
     #win-content{
-      position:absolute;
-      inset:0;
-      padding: 18px 18px;
+      position:relative;
+      z-index:1;
       display:flex;
       flex-direction:column;
       align-items:center;
       justify-content:flex-start;
-      gap: 10px;
+      gap: 12px;
+
       color: rgba(255,255,255,.98);
       text-shadow: var(--hud-shadow);
-
-      transform: translateY(92px);
     }
 
     #win-title{
-      margin-top: -10px;
+      margin-top: 2px;
       font-weight: 1000;
-      font-size: 28px;
-    }
-
-    #win-sub{
-      margin-top: -10px;
-      font-weight: 900;
-      font-size: 14px;
-      opacity: .95;
+      font-size: 30px;
+      color: rgba(239,60,32,.98);
     }
 
     #win-grid{
-      margin-top: 30px;
-      width: 92%;
+      width: 100%;
       display:grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
+      margin-top: 6px;
     }
 
+    /* отдельные прямоугольники под каждый результат */
     .wcell{
-      padding: 10px 12px;
-      border-radius: 0;
-      background: transparent !important;
-      border: none !important;
-      box-shadow: none !important;
-      text-shadow: none;
+      padding: 12px 12px;
+      border-radius: 14px;
+
+      background: rgba(255,255,255,.20); /* чуть менее прозрачные */
+      border: 1px solid rgba(255,255,255,.28);
+      box-shadow:
+        0 16px 30px rgba(0,0,0,.10),
+        inset 0 1px 0 rgba(255,255,255,.20);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
     }
 
     .wcell .k{
       font-weight: 900;
       font-size: 14px;
       opacity: .98;
-      color: rgba(255,255,255,.95);
+      color: rgba(239,60,32,.98);
     }
 
     .wcell .v{
       margin-top: 3px;
       font-weight: 1000;
       font-size: 20px;
-      color: rgba(255,255,255,.98);
+      color: rgba(239,60,32,.98);
     }
 
+    #win-content,
+    #win-content *{
+      text-shadow: none !important;
+    }
+
+    #win-title,
+    .wcell .k,
+    .wcell .v{
+      -webkit-text-stroke: 2.8px rgb(255, 255, 255);
+      paint-order: stroke fill;
+    }
+    .wcell .v{
+      -webkit-text-stroke-width: 1.4px;
+    }
     #tryagain-wrap{
-      margin-top: 34px;
+      margin-top: 10px;
       display:flex;
       align-items:center;
       justify-content:center;
@@ -517,10 +548,8 @@
     <!-- WIN -->
     <div id="overlay" role="dialog" aria-modal="true" aria-label="Win">
       <div id="win-modal">
-        <img id="win-frame" alt="" />
         <div id="win-content">
           <div id="win-title">Победа!</div>
-          <div id="win-sub">Clean flips. Perfect vibes.</div>
 
           <div id="win-grid">
             <div class="wcell"><div class="k">Время</div><div class="v" id="w-time">00:00</div></div>
@@ -530,8 +559,8 @@
           </div>
 
           <div id="tryagain-wrap">
-            <button class="imgbtn" id="btn-tryagain" type="button" aria-label="Try Again">
-              <img id="tryagain-img" alt="Ещё раз" />
+            <button class="imgbtn" id="btn-tryagain" type="button" aria-label="Restart">
+              <img id="tryagain-img" alt="Рестарт" />
             </button>
           </div>
         </div>
@@ -555,7 +584,6 @@
 
     // рядом с html
     roundCount: './Raund Count.png',
-    winFrame: './win frame.png',
 
     buttons: {
       easy:   { n: '4x3_button.png',     h: '4x3_button_Hover.png' },
@@ -596,7 +624,6 @@
     btnRestart: document.querySelector('#btn-restart img'),
 
     overlay: document.getElementById('overlay'),
-    winFrame: document.getElementById('win-frame'),
     wTime: document.getElementById('w-time'),
     wMoves: document.getElementById('w-moves'),
     wAcc: document.getElementById('w-acc'),
@@ -991,8 +1018,6 @@
   function initImages(){
     setBgByOrientation();
 
-    el.winFrame.src = u(ASSETS.winFrame);
-
     btnEasyCtrl = setupImgButton(el.btnEasyWrap, el.btnEasy, ASSETS.buttons.easy.n, ASSETS.buttons.easy.h, {
       stickyActive:true, isActiveFn: () => game.diff === 'easy'
     });
@@ -1004,7 +1029,6 @@
     });
 
     setupImgButton(el.btnRestartWrap, el.btnRestart, ASSETS.buttons.restart.n, ASSETS.buttons.restart.h);
-
     setupImgButton(el.btnTryAgain, el.tryAgainImg, ASSETS.buttons.tryAgain.n, ASSETS.buttons.tryAgain.h);
   }
 
@@ -1049,7 +1073,6 @@
       u(ASSETS.bg),
       u(ASSETS.bgLandscape),
       u(ASSETS.roundCount),
-      u(ASSETS.winFrame),
 
       ...Object.values(ASSETS.buttons).flatMap(b => [u(ASSETS.uiDir + b.n), u(ASSETS.uiDir + b.h)]),
       ...ASSETS.cardNames.map(n => u(ASSETS.cardsDir + n)),
